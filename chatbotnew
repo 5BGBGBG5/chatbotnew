@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>inecta food erp - Discovery Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #3b82f6;
+            --accent-color: #60a5fa;
+            --bg-color: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-primary);
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 900px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .progress-container {
+            padding: 20px 30px;
+            background: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .progress-step::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            right: -50%;
+            height: 2px;
+            background: var(--border-color);
+            z-index: -1;
+        }
+
+        .progress-step:last-child::before {
+            display: none;
+        }
+
+        .progress-step.completed::before {
+            background: var(--success-color);
+        }
+
+        .progress-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid var(--border-color);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .progress-step.active .progress-circle {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .progress-step.completed .progress-circle {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+
+        .progress-label {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            padding: 30px;
+            background: white;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.bot {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .message.user .message-avatar {
+            margin-right: 0;
+            margin-left: 12px;
+            background: var(--accent-color);
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: var(--bg-color);
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg-color);
+            border-radius: 12px;
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        .input-container {
+            padding: 20px 30px;
+            background: var(--bg-color);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .file-upload-wrapper {
+            margin-top: 12px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .file-upload-label {
+            padding: 8px 16px;
+            background: white;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .file-upload-label:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .file-upload-input {
+            display: none;
+        }
+
+        .uploaded-files {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .uploaded-file {
+            padding: 6px 12px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 6px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .uploaded-file .remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .action-buttons {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .coverage-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .coverage-bar {
+            width: 150px;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .coverage-fill {
+            height: 100%;
+            background: var(--success-color);
+            transition: width 0.5s ease;
+        }
+
+        .coverage-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 0;
+                height: 100vh;
+                max-width: 100%;
+            }
+
+            .chat-container {
+                height: calc(100vh - 400px);
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .progress-label {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Test Button for Debugging -->
+    <button onclick="testWebhook()" style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: #ef4444; color: white; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600;">Test Webhook</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🍴 inecta food erp Discovery</h1>
+            <p>Let's understand your food business needs together</p>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-steps">
+                <div class="progress-step active" data-step="1">
+                    <div class="progress-circle">1</div>
+                    <div class="progress-label">Company Profile</div>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <div class="progress-circle">2</div>
+                    <div class="progress-label">Business Processes</div>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <div class="progress-circle">3</div>
+                    <div class="progress-label">Current Systems</div>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <div class="progress-circle">4</div>
+                    <div class="progress-label">Requirements</div>
+                </div>
+                <div class="progress-step" data-step="5">
+                    <div class="progress-circle">5</div>
+                    <div class="progress-label">Summary</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message bot">
+                <div class="message-avatar">i</div>
+                <div class="message-content">
+                    Welcome! I'm your inecta discovery assistant. I'll help you explore how our food ERP solution can transform your operations. Let's start with your company name and what type of food business you run.
+                </div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input type="text" class="input-field" id="userInput" placeholder="Type your response here..." autocomplete="off">
+                <button class="btn" id="sendButton">
+                    Send →
+                </button>
+            </div>
+            <div class="file-upload-wrapper">
+                <label class="file-upload-label" for="fileUpload">
+                    📎 Upload Documents (PDF/DOCX)
+                </label>
+                <input type="file" class="file-upload-input" id="fileUpload" accept=".pdf,.doc,.docx" multiple>
+                <div class="uploaded-files" id="uploadedFiles"></div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <div class="coverage-indicator">
+                <span class="coverage-text">Discovery Progress:</span>
+                <div class="coverage-bar">
+                    <div class="coverage-fill" id="coverageFill" style="width: 5%"></div>
+                </div>
+                <span class="coverage-text" id="coveragePercent">5%</span>
+            </div>
+            <div>
+                <button class="btn btn-secondary" id="skipButton">Skip Section</button>
+                <button class="btn" id="generateReport" disabled>
+                    📄 Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="reportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Discovery Report Ready</h2>
+            </div>
+            <div class="modal-body">
+                Your personalized inecta food ERP discovery report has been generated. It includes all collected information, recommended modules, and next steps for your implementation journey.
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+                <button class="btn" id="downloadReport">
+                    📥 Download Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            webhookUrl: 'https://inecta.app.n8n.cloud/webhook/discovery-chat-v1',
+            debug: true, // Keep debug on to see what's happening
+            maxFileSize: 10 * 1024 * 1024 // 10MB
+        };
+
+        // Session management
+        const session = {
+            id: generateSessionId(),
+            conversationHistory: [],
+            collectedData: {
+                companyProfile: {},
+                businessProcesses: {},
+                currentSystems: {},
+                requirements: {},
+                painPoints: []
+            },
+            currentStep: 1,
+            coverage: 5,
+            uploadedFiles: []
+        };
+
+        // Questionnaire mapping (simplified - in production, load from n8n)
+        const questionnaireMap = {
+            bakery: ['production_planning', 'batch_tracking', 'recipe_management'],
+            dairy: ['milk_reception', 'quality_testing', 'pasteurization'],
+            meat: ['carcass_tracking', 'cutting_patterns', 'cold_chain'],
+            seafood: ['catch_tracking', 'freshness_monitoring', 'sustainability'],
+            beverage: ['blending', 'bottling', 'carbonation'],
+            general: ['inventory', 'procurement', 'sales', 'compliance']
+        };
+
+        // DOM elements
+        const chatContainer = document.getElementById('chatContainer');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const fileUpload = document.getElementById('fileUpload');
+        const uploadedFiles = document.getElementById('uploadedFiles');
+        const generateReportBtn = document.getElementById('generateReport');
+        const downloadReportBtn = document.getElementById('downloadReport');
+        const skipButton = document.getElementById('skipButton');
+        const coverageFill = document.getElementById('coverageFill');
+        const coveragePercent = document.getElementById('coveragePercent');
+
+        // Initialize
+        function init() {
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            fileUpload.addEventListener('change', handleFileUpload);
+            generateReportBtn.addEventListener('click', generateReport);
+            downloadReportBtn.addEventListener('click', downloadReport);
+            skipButton.addEventListener('click', skipSection);
+
+            if (CONFIG.debug) {
+                console.log('Debug mode enabled');
+                console.log('Session:', session);
+            }
+        }
+
+        // Generate unique session ID
+        function generateSessionId() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Send message to n8n webhook
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            console.log('Sending message:', message);
+
+            // Add user message to UI
+            addMessage(message, 'user');
+            userInput.value = '';
+            userInput.disabled = true;
+            sendButton.disabled = true;
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Add to conversation history
+            session.conversationHistory.push({
+                role: 'user',
+                content: message,
+                timestamp: new Date().toISOString()
+            });
+
+            try {
+                console.log('Calling webhook with session:', session);
+                const response = await callWebhook({
+                    action: 'chat',
+                    message: message,
+                    session: session
+                });
+
+                console.log('Got response:', response);
+                hideTypingIndicator();
+
+                // The response is an array with one object, so get the first element
+                const responseData = Array.isArray(response) ? response[0] : response;
+                
+                // Check if response is valid
+                if (!responseData) {
+                    throw new Error('No response received from webhook');
+                }
+
+                // Get the bot message
+                const botMessage = responseData.botMessage || responseData.message || 'I received your message but had trouble processing it.';
+                
+                console.log('Bot message:', botMessage);
+                
+                // Add bot response
+                addMessage(botMessage, 'bot');
+                
+                // Update session data if provided
+                if (responseData.updatedData) {
+                    Object.assign(session.collectedData, responseData.updatedData);
+                }
+                
+                // Update progress if provided
+                if (responseData.progress) {
+                    updateProgress(responseData.progress);
+                }
+
+                // Add to history
+                session.conversationHistory.push({
+                    role: 'assistant',
+                    content: botMessage,
+                    timestamp: new Date().toISOString()
+                });
+                
+            } catch (error) {
+                hideTypingIndicator();
+                console.error('Error in sendMessage:', error);
+                addMessage('I apologize, but I encountered an issue. Please try again or contact support if the problem persists.', 'bot');
+            } finally {
+                userInput.disabled = false;
+                sendButton.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        // Call n8n webhook
+        async function callWebhook(payload) {
+            console.log('Calling webhook with URL:', CONFIG.webhookUrl);
+            if (CONFIG.debug) {
+                console.log('Webhook payload:', payload);
+            }
+
+            // Simulate response in debug mode if webhook not configured
+            if (CONFIG.webhookUrl.includes('YOUR-N8N-INSTANCE')) {
+                console.error('Webhook URL not configured! Please update CONFIG.webhookUrl');
+                return simulateResponse(payload);
+            }
+
+            try {
+                console.log('Sending request to n8n...');
+                const response = await fetch(CONFIG.webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Response error text:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+
+                const text = await response.text();
+                console.log('Raw response text:', text);
+                
+                try {
+                    const data = JSON.parse(text);
+                    
+                    if (CONFIG.debug) {
+                        console.log('Webhook response data:', data);
+                    }
+
+                    return data;
+                } catch (parseError) {
+                    console.error('Failed to parse JSON:', parseError);
+                    console.error('Response was:', text);
+                    throw new Error('Invalid JSON response from webhook');
+                }
+            } catch (error) {
+                console.error('Fetch error details:', error);
+                if (error.message.includes('Failed to fetch')) {
+                    console.error('This might be a CORS issue. Check n8n webhook CORS settings.');
+                }
+                throw error;
+            }
+        }
+
+        // Simulate webhook response for testing
+        function simulateResponse(payload) {
+            const responses = {
+                chat: {
+                    success: true,
+                    botMessage: "Thank you for that information! Now, let me understand your production processes better. Do you handle batch production, continuous flow, or both?",
+                    updatedData: {
+                        companyProfile: { name: payload.message }
+                    },
+                    progress: { step: 1, coverage: 15 }
+                },
+                generateReport: {
+                    success: true,
+                    reportUrl: 'data:text/html,<h1>Sample Report</h1>',
+                    reportData: btoa('<h1>Discovery Report</h1><p>Your report content here...</p>')
+                }
+            };
+
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve(responses[payload.action] || { success: false, error: 'Unknown action' });
+                }, 1000);
+            });
+        }
+
+        // Add message to chat
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = type === 'bot' ? 'i' : 'U';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = content; // Allow HTML for formatting
+            
+            if (type === 'bot') {
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(contentDiv);
+            } else {
+                messageDiv.appendChild(contentDiv);
+                messageDiv.appendChild(avatar);
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const indicator = document.createElement('div');
+            indicator.className = 'message bot';
+            indicator.id = 'typingIndicator';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = 'i';
+            
+            const typing = document.createElement('div');
+            typing.className = 'typing-indicator';
+            typing.innerHTML = '<span></span><span></span><span></span>';
+            
+            indicator.appendChild(avatar);
+            indicator.appendChild(typing);
+            chatContainer.appendChild(indicator);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // Handle file upload
+        async function handleFileUpload(event) {
+            const files = Array.from(event.target.files);
+            
+            for (const file of files) {
+                if (file.size > CONFIG.maxFileSize) {
+                    alert(`File ${file.name} exceeds 10MB limit`);
+                    continue;
+                }
+
+                // Add to UI
+                const fileTag = document.createElement('div');
+                fileTag.className = 'uploaded-file';
+                fileTag.innerHTML = `
+                    ${file.name}
+                    <span class="remove" onclick="removeFile('${file.name}')">×</span>
+                `;
+                uploadedFiles.appendChild(fileTag);
+
+                // Convert to base64
+                const base64 = await fileToBase64(file);
+                session.uploadedFiles.push({
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    data: base64
+                });
+
+                // Process with webhook
+                try {
+                    const response = await callWebhook({
+                        action: 'processDocument',
+                        file: {
+                            name: file.name,
+                            type: file.type,
+                            data: base64
+                        },
+                        session: session
+                    });
+
+                    if (response.success && response.extractedInfo) {
+                        addMessage(`I've processed ${file.name} and extracted relevant information. ${response.summary}`, 'bot');
+                        Object.assign(session.collectedData, response.extractedInfo);
+                        updateProgress(response.progress);
+                    }
+                } catch (error) {
+                    console.error('Error processing file:', error);
+                    addMessage(`I couldn't process ${file.name}. Please continue with the conversation.`, 'bot');
+                }
+            }
+
+            event.target.value = '';
+        }
+
+        // Convert file to base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // Remove uploaded file
+        function removeFile(fileName) {
+            session.uploadedFiles = session.uploadedFiles.filter(f => f.name !== fileName);
+            const fileElements = uploadedFiles.querySelectorAll('.uploaded-file');
+            fileElements.forEach(el => {
+                if (el.textContent.includes(fileName)) {
+                    el.remove();
+                }
+            });
+        }
+
+        // Update progress
+        function updateProgress(progress) {
+            if (progress.step) {
+                session.currentStep = progress.step;
+                updateProgressSteps();
+            }
+
+            if (progress.coverage) {
+                session.coverage = progress.coverage;
+                coverageFill.style.width = `${progress.coverage}%`;
+                coveragePercent.textContent = `${progress.coverage}%`;
+
+                // Enable report generation at 90% coverage
+                if (progress.coverage >= 90) {
+                    generateReportBtn.disabled = false;
+                }
+            }
+        }
+
+        // Update progress steps UI
+        function updateProgressSteps() {
+            const steps = document.querySelectorAll('.progress-step');
+            steps.forEach((step, index) => {
+                const stepNum = index + 1;
+                step.classList.remove('active', 'completed');
+                
+                if (stepNum < session.currentStep) {
+                    step.classList.add('completed');
+                } else if (stepNum === session.currentStep) {
+                    step.classList.add('active');
+                }
+            });
+        }
+
+        // Skip current section
+        async function skipSection() {
+            addMessage('Skipping to next section...', 'user');
+            showTypingIndicator();
+
+            try {
+                const response = await callWebhook({
+                    action: 'skipSection',
+                    session: session
+                });
+
+                hideTypingIndicator();
+
+                if (response.success) {
+                    addMessage(response.botMessage, 'bot');
+                    updateProgress(response.progress);
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                console.error('Error:', error);
+            }
+        }
+
+        // Generate report
+        async function generateReport() {
+            generateReportBtn.disabled = true;
+            generateReportBtn.textContent = 'Generating...';
+
+            try {
+                const response = await callWebhook({
+                    action: 'generateReport',
+                    session: session
+                });
+
+                if (response.success) {
+                    session.reportData = response.reportData;
+                    session.reportUrl = response.reportUrl;
+                    document.getElementById('reportModal').classList.add('active');
+                }
+            } catch (error) {
+                console.error('Error generating report:', error);
+                alert('Failed to generate report. Please try again.');
+            } finally {
+                generateReportBtn.disabled = false;
+                generateReportBtn.textContent = '📄 Generate Report';
+            }
+        }
+
+        // Download report
+        function downloadReport() {
+            if (!session.reportData) return;
+
+            const blob = new Blob([atob(session.reportData)], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `inecta_discovery_${session.collectedData.companyProfile.name || 'report'}_${new Date().toISOString().split('T')[0]}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('reportModal').classList.remove('active');
+        }
+
+        // Initialize on load
+        init();
+
+        // Test webhook function
+        async function testWebhook() {
+            console.log('=== WEBHOOK TEST STARTED ===');
+            console.log('Webhook URL:', CONFIG.webhookUrl);
+            
+            const testPayload = {
+                action: 'chat',
+                message: 'test message from browser',
+                session: {
+                    id: 'test_' + Date.now(),
+                    currentStep: 1,
+                    coverage: 5,
+                    collectedData: {},
+                    conversationHistory: []
+                }
+            };
+            
+            console.log('Test payload:', testPayload);
+            
+            try {
+                console.log('Sending test request...');
+                const response = await fetch(CONFIG.webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testPayload)
+                });
+                
+                console.log('Response received!');
+                console.log('Status:', response.status);
+                console.log('Headers:', [...response.headers.entries()]);
+                
+                const responseText = await response.text();
+                console.log('Response body (raw):', responseText);
+                
+                try {
+                    const data = JSON.parse(responseText);
+                    console.log('Response data (parsed):', data);
+                    alert('✅ Webhook test successful! Check console for details.');
+                } catch (parseError) {
+                    console.error('Failed to parse response as JSON:', parseError);
+                    alert('⚠️ Webhook responded but with non-JSON data. Check console.');
+                }
+            } catch (error) {
+                console.error('=== WEBHOOK TEST FAILED ===');
+                console.error('Error type:', error.name);
+                console.error('Error message:', error.message);
+                console.error('Full error:', error);
+                
+                if (error.message.includes('Failed to fetch')) {
+                    alert('❌ CORS Error: Cannot connect to webhook. Check n8n CORS settings.');
+                } else {
+                    alert('❌ Webhook test failed! Error: ' + error.message);
+                }
+            }
+            
+            console.log('=== WEBHOOK TEST COMPLETED ===');
+        }
+    </script>
+</body>
+</html>
